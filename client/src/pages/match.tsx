@@ -3,12 +3,15 @@ import { useParams } from "wouter";
 import { StatsChart } from "@/components/stats-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import type { Match } from "@shared/schema";
+import { getMatch } from "@/lib/api";
 
 export default function Match() {
   const { id } = useParams();
-  
-  const { data: match, isLoading } = useQuery({
+
+  const { data: match, isLoading } = useQuery<Match>({
     queryKey: [`/api/matches/${id}`],
+    queryFn: () => getMatch(id!),
     refetchInterval: 30000,
   });
 
@@ -58,15 +61,15 @@ export default function Match() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StatsChart data={runRateData} />
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Commentary</CardTitle>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[300px]">
-              {match.stats.commentary?.map((comment, i) => (
-                <p key={i} className="mb-2 text-sm">{comment}</p>
+              {match.stats.commentary?.map((comment, index) => (
+                <p key={index} className="mb-2 text-sm">{comment}</p>
               )) || <p>No commentary available</p>}
             </ScrollArea>
           </CardContent>

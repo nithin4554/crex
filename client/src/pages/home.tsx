@@ -4,16 +4,18 @@ import { SearchBar } from "@/components/search-bar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useState } from "react";
 import type { Match } from "@shared/schema";
+import { getMatches } from "@/lib/api";
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
-  
-  const { data: matches, isLoading } = useQuery({
+
+  const { data: matches = [], isLoading } = useQuery<Match[]>({
     queryKey: ["/api/matches"],
+    queryFn: getMatches,
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  const filteredMatches = matches?.filter((match: Match) => {
+  const filteredMatches = matches.filter((match) => {
     const query = searchQuery.toLowerCase();
     return (
       match.teamA.toLowerCase().includes(query) ||
@@ -42,7 +44,7 @@ export default function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredMatches?.map((match: Match) => (
+            {filteredMatches.map((match) => (
               <MatchCard key={match.id} match={match} />
             ))}
           </div>
