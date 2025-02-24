@@ -36,7 +36,20 @@ export class MemStorage implements IStorage {
 
   async cacheMatch(match: InsertMatch): Promise<Match> {
     const id = this.currentId++;
-    const newMatch = { ...match, id };
+    const newMatch: Match = {
+      id,
+      matchId: match.matchId,
+      teamA: match.teamA,
+      teamB: match.teamB,
+      scoreA: match.scoreA,
+      scoreB: match.scoreB,
+      overs: match.overs,
+      status: match.status,
+      venue: match.venue,
+      startTime: match.startTime,
+      lastUpdated: match.lastUpdated,
+      stats: match.stats
+    };
     this.matches.set(match.matchId, newMatch);
     return newMatch;
   }
