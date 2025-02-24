@@ -7,6 +7,16 @@ import type { InsertMatch } from "@shared/schema";
 const CRICKET_API_KEY = process.env.CRICKET_API_KEY || "demo_key";
 const API_BASE_URL = "https://api.cricapi.com/v1";
 
+// Helper function to check if a match is international
+function isInternationalMatch(match: any): boolean {
+  const internationalKeywords = ['TEST', 'ODI', 'T20I', 'INTERNATIONAL', 'WORLD CUP'];
+  return internationalKeywords.some(keyword => 
+    match.name?.toUpperCase().includes(keyword) || 
+    match.matchType?.toUpperCase().includes(keyword) ||
+    match.status?.toUpperCase().includes(keyword)
+  );
+}
+
 async function fetchMatches() {
   try {
     console.log("Fetching matches from Cricket API...");
@@ -20,20 +30,23 @@ async function fetchMatches() {
     }
 
     console.log(`Fetched ${response.data.data.length} matches`);
-    return response.data.data.map((match: any) => ({
-      id: match.id,
-      teamA: match.teamInfo?.[0]?.name || match.teams?.[0] || "Team A",
-      teamB: match.teamInfo?.[1]?.name || match.teams?.[1] || "Team B",
-      scoreA: match.score?.[0]?.r ? `${match.score[0].r}/${match.score[0].w || 0} (${match.score[0].o || 0})` : "Yet to bat",
-      scoreB: match.score?.[1]?.r ? `${match.score[1].r}/${match.score[1].w || 0} (${match.score[1].o || 0})` : "Yet to bat",
-      overs: match.overs || "0.0",
-      status: match.status || "UPCOMING",
-      venue: match.venue || "TBD",
-      startTime: match.dateTimeGMT || new Date().toISOString(),
-      partnership: match.partnership,
-      runRate: parseFloat(match.runRate) || 0,
-      requiredRate: parseFloat(match.requiredRunRate) || 0
-    }));
+    // Filter and map only international matches
+    return response.data.data
+      .filter(isInternationalMatch)
+      .map((match: any) => ({
+        id: match.id,
+        teamA: match.teamInfo?.[0]?.name || match.teams?.[0] || "Team A",
+        teamB: match.teamInfo?.[1]?.name || match.teams?.[1] || "Team B",
+        scoreA: match.score?.[0]?.r ? `${match.score[0].r}/${match.score[0].w || 0} (${match.score[0].o || 0})` : "Yet to bat",
+        scoreB: match.score?.[1]?.r ? `${match.score[1].r}/${match.score[1].w || 0} (${match.score[1].o || 0})` : "Yet to bat",
+        overs: match.overs || "0.0",
+        status: match.status || "UPCOMING",
+        venue: match.venue || "TBD",
+        startTime: match.dateTimeGMT || new Date().toISOString(),
+        partnership: match.partnership,
+        runRate: parseFloat(match.runRate) || 0,
+        requiredRate: parseFloat(match.requiredRunRate) || 0
+      }));
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error("API Error:", {
